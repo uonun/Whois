@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!------------------------------------------
+'Author: uonun
+'Blog: http://blog.udnz.com
+'Homepage: http://www.udnz.com
+'E-mail: uonun{@)163.com
+'------------------------------------------>
+<head>
+    <title>new document </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+    <meta http-equiv="Content-Language" content="zh-CN" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <style type="text/css" title="">
+        body { margin: 0; padding: 50px; color: #000; background-color: #FFF; }
+        body, td, p, input, textarea, select { font-size: 12px; line-height: 150%; font-family: Arial, Helvetica, sans-serif; }
+        .att { color: #F00; }
+        .domain { font-size: 14px; line-height: 200%; }
+        .item { margin: 0 0 5px; }
+        .detail { padding-left: 30px; }
+    </style>
+</head>
+<body>
+    <script language="JavaScript" type="text/javascript">
+  <!--
+        var i=0;
+        var domains = new Array();
+        $(function () {
+            getDomainNames(domains, 2);
+            loop();
+        });
+
+       
+        function loop(){
+            //domains[i] = "google.com";
+            var api;
+            //api = new API_hichina();
+            //api = new API_hichina2();
+            //api = new API_whoisxml();
+            //api = new API_hexillion();
+            api= new API_rwen();
+            api.init(domains[i]);
+            $.ajax(api.ajaxParams);
+            console.log(domains[i]);
+            if(++i<domains.length){
+                setTimeout("loop()", 300);
+            }
+        }
+
+        function showInfo(domain, info) {
+            $("#info")[0].innerHTML = "<div class='item'><span class='domain'>" + domain + "</span>: " + info + "</div>" + $("#info")[0].innerHTML;
+        }
+
+        function getDomainNames(domains, length) {
+            var dic = "0123456789abcdefghijklmnopqrstuvwxyz";
+            var result = "";
+
+            var mi = dic.length;
+            var min = Math.pow(mi, length - 1);
+            var max = 0;
+            for (var i = 0; i < length; i++) {
+                max += (mi - 1) * Math.pow(mi, i);
+            }
+
+            for (var i = min; i <= max; i++) {
+                var result = "";
+                var last = -1;
+                for (var j = length - 1; j >= 0; j--) {
+                    last = parseInt(i % Math.pow(mi, j + 1) / Math.pow(mi, j));
+                    result += dic.charAt(last);
+                }
+                domains.push(result + ".com");
+            }
+        }
+
+
+        // ************************************************** BaseApi **************************************************
+        // the base type MUST be before of the implementations
+        // ************************************************** BaseApi **************************************************
+        function BaseApi() { 
+            this.ajaxParams = {
+                type: "GET",
+                dataType: "jsonp",
+                crossDomain: true,
+                success: null,
+                error: function () {
+                    info = "<span class='att'>FAIL</span> (QueryUrl: " + this.queryUrl + ")";
+                    window.showInfo(this.domain, info)
+                }
+            };
+        }
+        BaseApi.prototype = {
+            API: "[UNKNOWNAPI]",
+            domain: null,
+            queryUrl: null,
+            init: function (domain) {
+                this.domain = domain;
+                this.queryUrl = this.API + this.domain + "&t=" + Math.random();
+                this.ajaxParams.context = this;
+                this.ajaxParams.url = this.queryUrl;
+            },
+        }
+
+        // ************************************************** API_hichina **************************************************
+        function API_hichina() { }
+        API_hichina.prototype = new BaseApi();
+        API_hichina.prototype.constructor = API_hichina;
+        API_hichina.prototype.API = "http://whois.hichina.com/whois/api_whois?host=";
+        API_hichina.prototype.ajaxParams.dataType = "text";
+        API_hichina.prototype.ajaxParams.beforeSend = function (jqXHR) {
+            // set request headers here rather than in the ajax 'headers' object
+            jqXHR.setRequestHeader('Accept-Encoding', 'deflate');
+        };
+        API_hichina.prototype.ajaxParams.success = function (json) {
+            json = JSON.parse(json);
+            var info;
+            if (!!json.ErrorMessage) {
+                info = json.ErrorMessage.msg;
+            } else {
+                info = (!!json.WhoisRecord.registrant) ? "Y" : "N";
+                if (info == "Y") {
+                    info += "<div class='detail'>";
+                    info += "<strong>expiresDate</strong> = " + json.WhoisRecord.expiresDate;
+                    info += "<br /><strong>registrant</strong> = " + json.WhoisRecord.registrant.name;
+                    info += "<br /><strong>status</strong> = " + json.WhoisRecord.registryData.status;
+                    info += "<br /><strong>whoisServer</strong> = " + json.WhoisRecord.registryData.whoisServer;
+                    info += "<br /><strong>registrant.email</strong> = " + json.WhoisRecord.registrant.email;
+                    info += "<br /><strong>registrant.name</strong> = " + json.WhoisRecord.registrant.name;
+                    info += "</div>";
+                }
+            }
+            if (!!this.onsuccess)
+                this.onsuccess(this.domain, info)
+            return true;
+        }
+
+        // ************************************************** API_hichina2 **************************************************
+        function API_hichina2() { }
+        API_hichina2.prototype = new BaseApi();
+        API_hichina2.prototype.constructor = API_hichina2;
+        API_hichina2.prototype.API = "http://panda.www.net.cn/cgi-bin/check.cgi?area_domain=";
+        API_hichina2.prototype.ajaxParams.dataType = "html";
+        API_hichina2.prototype.ajaxParams.success = function (json) {
+            alert(json);
+            //                var info;
+            //                if (!!json.ErrorMessage) {
+            //                    info = json.ErrorMessage.msg;
+            //                } else {
+            //                    info = (!!json.WhoisRecord.registrant) ? "Y" : "N";
+            //                    if (info == "Y") {
+            //                        info += "<div class='detail'>";
+            //                        info += "<strong>expiresDate</strong> = " + json.WhoisRecord.expiresDate;
+            //                        info += "<br /><strong>registrant</strong> = " + json.WhoisRecord.registrant.name;
+            //                        info += "<br /><strong>status</strong> = " + json.WhoisRecord.registryData.status;
+            //                        info += "<br /><strong>whoisServer</strong> = " + json.WhoisRecord.registryData.whoisServer;
+            //                        info += "<br /><strong>registrant.email</strong> = " + json.WhoisRecord.registrant.email;
+            //                        info += "<br /><strong>registrant.name</strong> = " + json.WhoisRecord.registrant.name;
+            //                        info += "</div>";
+            //                    }
+            //                }
+            //                if (!!this.onsuccess)
+            //                    this.onsuccess(this.domain, info)
+            //                return true;
+        };
+
+        // ************************************************** API_whoisxml **************************************************
+        function API_whoisxml() { }
+        API_whoisxml.prototype = new BaseApi();
+        API_whoisxml.prototype.constructor = API_whoisxml;
+        API_whoisxml.prototype.API = "http://www.whoisxmlapi.com/whoisserver/WhoisService?outputFormat=json&domainName=";
+        API_whoisxml.prototype.ajaxParams.dataType = "jsonp";
+        API_whoisxml.prototype.ajaxParams.success = function (json) {
+            var info;
+            if (!!json.ErrorMessage) {
+                info = "<span class='att'>FAIL: </span>" + json.ErrorMessage.msg;
+                info += " (QueryUrl: " + this.queryUrl + ")";
+            } else {
+                info = (!!json.WhoisRecord.registrant) ? "Y" : "N";
+                if (info == "Y") {
+                    info += "<div class='detail'>";
+                    info += "<strong>expiresDate</strong> = " + json.WhoisRecord.expiresDate;
+                    info += "<br /><strong>registrant</strong> = " + json.WhoisRecord.registrant.name;
+                    info += "<br /><strong>status</strong> = " + json.WhoisRecord.registryData.status;
+                    info += "<br /><strong>whoisServer</strong> = " + json.WhoisRecord.registryData.whoisServer;
+                    info += "<br /><strong>registrant.email</strong> = " + json.WhoisRecord.registrant.email;
+                    info += "<br /><strong>registrant.name</strong> = " + json.WhoisRecord.registrant.name;
+                    info += "</div>";
+                }
+            }
+            window.showInfo(this.domain, info)
+            return true;
+        };
+ 
+        // ************************************************** API_hexillion **************************************************
+        function API_hexillion() { }
+        API_hexillion.prototype = new BaseApi();
+        API_hexillion.prototype.constructor = API_hexillion;
+        API_hexillion.prototype.API = "http://hexillion.com/samples/WhoisXML/?query=";
+        API_hexillion.prototype.ajaxParams.dataType = "xml";
+        API_hexillion.prototype.ajaxParams.success = function (json) {
+            alert(json);
+        };
+ 
+        // ************************************************** API_hexillion **************************************************
+        function API_rwen() { }
+        API_rwen.prototype = new BaseApi();
+        API_rwen.prototype.constructor = API_rwen;
+        API_rwen.prototype.API = "http://sys.rwen.com/style/info/newxhccl.asp?domain=";
+        API_rwen.prototype.ajaxParams.dataType = "html";       
+        API_rwen.prototype.ajaxParams.success = function (json) {
+            var info;
+            var pattern = this.domain.replace(".","\\.")
+            pattern = "value%3D"+pattern+"%20disabled%3D%22disabled%22";
+            var re = new RegExp(pattern, "ig");
+            console.log(re);
+            var isok = re.test(json);
+            if(isok){
+                info = "Registed";
+            }else{
+                info = "<span class='att'>Unregisted</span>";
+                window.showInfo(this.domain, info)
+            }
+        };
+ //-->
+    </script>
+    <div id="info">
+    </div>
+    * Chrome with argument "--disable-web-security" only.
+</body>
+</html>
