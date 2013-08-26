@@ -24,26 +24,28 @@
     <script language="JavaScript" type="text/javascript">
   <!--
         var i=0;
+        var gotError=false;
         var domains = new Array();
         $(function () {
             getDomainNames(domains, 2);
             loop();
         });
 
-       
+        var timeSpan = 1000;
         function loop(){
             //domains[i] = "google.com";
             var api;
             //api = new API_hichina();
             //api = new API_hichina2();
-            //api = new API_whoisxml();
+            api = new API_whoisxml();
             //api = new API_hexillion();
-            api= new API_rwen();
+            //api = new API_rwen();
+			//api = new API_whois_com();
             api.init(domains[i]);
             $.ajax(api.ajaxParams);
             console.log(domains[i]);
-            if(++i<domains.length){
-                setTimeout("loop()", 300);
+            if(++i<domains.length && !gotError){
+                setTimeout("loop()", timeSpan);
             }
         }
 
@@ -85,6 +87,7 @@
                 success: null,
                 error: function () {
                     info = "<span class='att'>FAIL</span> (QueryUrl: " + this.queryUrl + ")";
+                    gotError=true;
                     window.showInfo(this.domain, info)
                 }
             };
@@ -107,18 +110,14 @@
         API_hichina.prototype.constructor = API_hichina;
         API_hichina.prototype.API = "http://whois.hichina.com/whois/api_whois?host=";
         API_hichina.prototype.ajaxParams.dataType = "text";
-        API_hichina.prototype.ajaxParams.beforeSend = function (jqXHR) {
-            // set request headers here rather than in the ajax 'headers' object
-            jqXHR.setRequestHeader('Accept-Encoding', 'deflate');
-        };
         API_hichina.prototype.ajaxParams.success = function (json) {
             json = JSON.parse(json);
             var info;
             if (!!json.ErrorMessage) {
                 info = json.ErrorMessage.msg;
             } else {
-                info = (!!json.WhoisRecord.registrant) ? "Y" : "N";
-                if (info == "Y") {
+                info = (!!json.WhoisRecord.registrant) ? "Registed" : "<span class='att'>UnRegisted</span>";
+                if (info == "Registed") {
                     info += "<div class='detail'>";
                     info += "<strong>expiresDate</strong> = " + json.WhoisRecord.expiresDate;
                     info += "<br /><strong>registrant</strong> = " + json.WhoisRecord.registrant.name;
@@ -129,8 +128,7 @@
                     info += "</div>";
                 }
             }
-            if (!!this.onsuccess)
-                this.onsuccess(this.domain, info)
+            window.showInfo(this.domain, info)
             return true;
         }
 
@@ -139,28 +137,27 @@
         API_hichina2.prototype = new BaseApi();
         API_hichina2.prototype.constructor = API_hichina2;
         API_hichina2.prototype.API = "http://panda.www.net.cn/cgi-bin/check.cgi?area_domain=";
-        API_hichina2.prototype.ajaxParams.dataType = "html";
-        API_hichina2.prototype.ajaxParams.success = function (json) {
-            alert(json);
-            //                var info;
-            //                if (!!json.ErrorMessage) {
-            //                    info = json.ErrorMessage.msg;
-            //                } else {
-            //                    info = (!!json.WhoisRecord.registrant) ? "Y" : "N";
-            //                    if (info == "Y") {
-            //                        info += "<div class='detail'>";
-            //                        info += "<strong>expiresDate</strong> = " + json.WhoisRecord.expiresDate;
-            //                        info += "<br /><strong>registrant</strong> = " + json.WhoisRecord.registrant.name;
-            //                        info += "<br /><strong>status</strong> = " + json.WhoisRecord.registryData.status;
-            //                        info += "<br /><strong>whoisServer</strong> = " + json.WhoisRecord.registryData.whoisServer;
-            //                        info += "<br /><strong>registrant.email</strong> = " + json.WhoisRecord.registrant.email;
-            //                        info += "<br /><strong>registrant.name</strong> = " + json.WhoisRecord.registrant.name;
-            //                        info += "</div>";
-            //                    }
-            //                }
-            //                if (!!this.onsuccess)
-            //                    this.onsuccess(this.domain, info)
-            //                return true;
+        API_hichina2.prototype.ajaxParams.dataType = "xml";
+        API_hichina2.prototype.ajaxParams.success = function (a,b,c) {
+            /*
+            "<?xml version="1.0" encoding="gb2312"?>
+            <property>
+            <returncode>200</returncode>
+            <key>10.com</key>
+            <original>211 : Domain name is not available</original>
+            </property>
+            "*/
+            var xml = c.responseText;
+            console.log(xml);
+            info ="UNKNOWN";
+            if(xml.indexOf("<returncode>200</returncode>")>-1){
+                if(xml.indexOf("Domain name is not available")>-1){
+                    info = "Registed.";
+                }else if(xml.indexOf(" Domain name is available")>-1){
+                    info = "<span class='att'>UnRegisted</span>.";
+                }
+            }
+            window.showInfo(this.domain, info)
         };
 
         // ************************************************** API_whoisxml **************************************************
@@ -174,9 +171,10 @@
             if (!!json.ErrorMessage) {
                 info = "<span class='att'>FAIL: </span>" + json.ErrorMessage.msg;
                 info += " (QueryUrl: " + this.queryUrl + ")";
+                gotError=true;
             } else {
-                info = (!!json.WhoisRecord.registrant) ? "Y" : "N";
-                if (info == "Y") {
+                info = (!!json.WhoisRecord.registrant) ? "Registed" : "<span class='att'>UnRegisted</span>";
+                if (info == "Registed") {
                     info += "<div class='detail'>";
                     info += "<strong>expiresDate</strong> = " + json.WhoisRecord.expiresDate;
                     info += "<br /><strong>registrant</strong> = " + json.WhoisRecord.registrant.name;
@@ -198,7 +196,7 @@
         API_hexillion.prototype.API = "http://hexillion.com/samples/WhoisXML/?query=";
         API_hexillion.prototype.ajaxParams.dataType = "xml";
         API_hexillion.prototype.ajaxParams.success = function (json) {
-            alert(json);
+            console.log(json);
         };
  
         // ************************************************** API_hexillion **************************************************
@@ -218,9 +216,21 @@
                 info = "Registed";
             }else{
                 info = "<span class='att'>Unregisted</span>";
-                window.showInfo(this.domain, info)
             }
+            window.showInfo(this.domain, info)
         };
+
+		// ************************************************** API_whois.com **************************************************
+        function API_whois_com() { }
+        API_whois_com.prototype = new BaseApi();
+        API_whois_com.prototype.constructor = API_whois_com;
+        API_whois_com.prototype.API = "http://www.whois.com/whois/refresh.php?domain=";
+        API_whois_com.prototype.ajaxParams.dataType = "json";
+        API_whois_com.prototype.ajaxParams.success = function (json) {
+            alert(json);
+        };
+
+
  //-->
     </script>
     <div id="info">
