@@ -1,17 +1,50 @@
 ﻿<Window x:Class="Whois.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="346" Width="688" Closed="Window_Closed">
+        Title="MainWindow" Height="483" Width="897" Closed="Window_Closed" xmlns:my="clr-namespace:Whois">
     <Grid>
-        <Button Content="查询" Height="23" HorizontalAlignment="Right" Margin="0,0,12,5" Name="buCheck" VerticalAlignment="Bottom" Width="57" Click="buCheck_Click" />
-        <Label Content="Ready" HorizontalAlignment="Left" Margin="12,0,0,0" Name="lbInfo" Height="28" VerticalAlignment="Bottom" />
-        <ListBox Margin="12,45,12,34" Name="lbResult" />
-        <Label Content="字典：" Height="28" HorizontalAlignment="Left" Margin="12,11,0,0" Name="label1" VerticalAlignment="Top" />
-        <TextBox Height="23" HorizontalAlignment="Right" Margin="0,13,12,0" Name="tbLength" VerticalAlignment="Top" Width="37" Text="3" />
-        <TextBox Height="23" Margin="64,13,223,0" Name="tbDic" VerticalAlignment="Top" Text="0123456789abcdefghijklmnopqrstuvwxyz" />
-        <Label Content="长度：" Height="28" HorizontalAlignment="Right" Margin="0,11,55,0" Name="label2" VerticalAlignment="Top" />
-        <Button Content="预览" Height="23" HorizontalAlignment="Right" Margin="0,0,75,5" Name="buPreview" VerticalAlignment="Bottom" Width="57" Click="buPreview_Click" />
-        <Label Content="扩展名：" Height="28" HorizontalAlignment="Right" Margin="0,11,159,0" Name="label3" VerticalAlignment="Top" />
-        <TextBox Height="23" HorizontalAlignment="Right" Margin="0,13,107,0" Name="tbExt" VerticalAlignment="Top" Width="46" Text=".com" />
+        <GroupBox Header="根据字典生成域名" Height="62" Margin="12,12,12,0" Name="gbGenerator" VerticalAlignment="Top">
+            <Grid>
+                <Label Content="字典：" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" Name="label1" VerticalAlignment="Top" />
+                <TextBox Height="23" HorizontalAlignment="Right" Margin="0,8,86,0" Name="tbLength" VerticalAlignment="Top" Width="37" Text="3" />
+                <TextBox Height="23" Margin="58,8,282,0" Name="tbDic" VerticalAlignment="Top" Text="0123456789abcdefghijklmnopqrstuvwxyz" />
+                <Label Content="长度：" Height="28" HorizontalAlignment="Right" Margin="0,6,126,0" Name="label2" VerticalAlignment="Top" />
+                <Label Content="后缀：" Height="28" HorizontalAlignment="Right" Margin="0,6,230,0" Name="label3" VerticalAlignment="Top" />
+                <TextBox Height="23" HorizontalAlignment="Right" Margin="0,8,178,0" Name="tbExt" VerticalAlignment="Top" Width="46" Text=".com" />
+                <Button Content="生成域名" Height="23" HorizontalAlignment="Right" Margin="0,8,6,0" Name="buPreview" VerticalAlignment="Top" Width="74" Click="buPreview_Click" />
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="API" Margin="12,80,12,0" Name="gbAPI" Height="121" VerticalAlignment="Top">
+            <Grid>
+                <ComboBox Height="23" HorizontalAlignment="Left" Margin="6,8,0,0" Name="cbAPI_opt" VerticalAlignment="Top" Width="98" Text="www.net.cn">
+                    <ComboBoxItem Content="rwen.com" IsSelected="False" />
+                    <ComboBoxItem Content="www.net.cn" IsSelected="True" />
+                </ComboBox>
+                <Label Content="URL:" Height="28" HorizontalAlignment="Left" Margin="110,6,0,0" Name="label8" VerticalAlignment="Top" />
+                <TextBox Height="23" Margin="152,8,6,0" Name="tbAPI_url" VerticalAlignment="Top" />
+                <Label Content="Available Partten:" Height="28" HorizontalAlignment="Left" Margin="36,37,0,0" Name="label9" VerticalAlignment="Top" />
+                <TextBox Height="23" Margin="152,39,6,0" Name="tbAPI_a_partten" VerticalAlignment="Top" />
+                <Label Content="Unavailable Partten:" Height="28" HorizontalAlignment="Left" Margin="21,68,0,0" Name="label10" VerticalAlignment="Top" />
+                <TextBox Height="23" Margin="152,70,6,0" Name="tbAPI_u_partten" VerticalAlignment="Top" />
+            </Grid>
+        </GroupBox>
+        <Button Content="查询" Height="23" HorizontalAlignment="Right" Margin="0,0,12,12" Name="buCheck" VerticalAlignment="Bottom" Width="100" Click="buCheck_Click" />
+        <Grid Margin="12,215,12,46" Name="grid1" IsItemsHost="False" ShowGridLines="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="待查询域名：（每行一个）" Height="28" HorizontalAlignment="Left" Name="label7" VerticalAlignment="Top" />
+            <TextBox Margin="0,25,0,0" Name="tbDomains" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" />
+            <ListBox Grid.Column="1" Name="lbResultRegisted" Margin="5,25,0,0" />
+            <ListBox Grid.Column="2" Name="lbResultUnRegisted" Margin="5,25,0,0" />
+            <ListBox Grid.Column="3" Name="lbResultUnknown" Margin="5,25,0,0" />
+            <TextBlock Grid.Column="1" Height="23" HorizontalAlignment="Left" Name="textBlock_reged" Text="已被注册：" VerticalAlignment="Top" Cursor="Hand" FontSize="12" MouseUp="textBlock_MouseUp" Margin="6,5,0,0" />
+            <TextBlock Cursor="Hand" FontSize="12" Height="23" HorizontalAlignment="Left" Name="textBlock_unreged" Text="未被注册：" MouseUp="textBlock_MouseUp" VerticalAlignment="Top" Grid.Column="2" Margin="5,5,0,0" />
+            <TextBlock Cursor="Hand" FontSize="12" Height="23" HorizontalAlignment="Left" Name="textBlock_unknown" Text="查询失败：" MouseUp="textBlock_MouseUp" VerticalAlignment="Top" Grid.Column="3" Margin="5,5,0,0" />
+        </Grid>
+        <my:ProgressBarWithDetails HorizontalAlignment="Left" Margin="12,0,0,12" x:Name="pb" VerticalAlignment="Bottom" Width="745" ContentStringFormat="Ready" TextHight="18" />
     </Grid>
 </Window>
