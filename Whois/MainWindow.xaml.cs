@@ -335,14 +335,10 @@ namespace Whois
                 throw new BzException(STR_ERR_LENGTH_ERROR);
 
             var fromBase = dic.Length;
-            var min = (int)Math.Pow(fromBase, length - 1);
+            var min = 0;
             var max = 0;
             if (fromBase > 1)
             {
-                //for (var i = 0;i < length;i++)
-                //{
-                //    max += (int)((fromBase - 1) * Math.Pow(fromBase, i));
-                //}
                 max = (int)Math.Pow(fromBase, length) - 1;
             }
             else { max = min; }
